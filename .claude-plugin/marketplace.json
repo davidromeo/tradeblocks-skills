@@ -21,7 +21,8 @@
         "./skills/tradeblocks-risk",
         "./skills/tradeblocks-compare",
         "./skills/tradeblocks-portfolio",
-        "./skills/tradeblocks-optimize"
+        "./skills/tradeblocks-optimize",
+        "./skills/tradeblocks-market-data"
       ]
     }
   ]

@@ -17,6 +17,7 @@ Agent skills and MCP server for analyzing Option Omega backtests and options tra
 | `tradeblocks-portfolio` | Portfolio analysis — correlation, diversification, marginal contribution |
 | `tradeblocks-risk` | Risk assessment — tail dependence, drawdown attribution, stress scenarios |
 | `tradeblocks-compare` | Strategy comparison — side-by-side metrics across blocks |
+| `tradeblocks-market-data` | Market data setup — import daily OHLCV, VIX context, and intraday option bars from API, CSV, or DuckDB |
 
 ## Install
 
