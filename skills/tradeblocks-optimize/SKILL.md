@@ -1,6 +1,7 @@
 ---
 name: tradeblocks-optimize
 description: Parameter exploration for trading backtests. Analyzes trade data to find patterns across parameters like time of day, DTE, delta ranges, and market conditions. Use when exploring which parameters performed differently or understanding strategy behavior across conditions.
+compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
 
 # Parameter Exploration

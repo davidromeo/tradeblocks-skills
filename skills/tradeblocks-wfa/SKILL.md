@@ -1,6 +1,7 @@
 ---
 name: tradeblocks-wfa
 description: Walk-forward analysis for trading strategies. Tests whether optimized parameters hold up on out-of-sample data. Use when checking parameter robustness, detecting potential overfitting, or validating a backtest.
+compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
 
 # Walk-Forward Analysis

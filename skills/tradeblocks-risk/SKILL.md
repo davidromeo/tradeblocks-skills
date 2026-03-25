@@ -1,6 +1,7 @@
 ---
 name: tradeblocks-risk
 description: Risk analysis for trading strategies including Kelly criterion calculations, tail risk metrics, and Monte Carlo projections. Use when exploring position sizing, capital allocation, or understanding worst-case characteristics.
+compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
 
 # Risk Analysis

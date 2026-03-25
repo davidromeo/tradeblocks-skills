@@ -1,6 +1,7 @@
 ---
 name: tradeblocks-health-check
 description: Strategy health check for trading backtests. Analyzes performance metrics, runs stress tests, and surfaces risk indicators. Use when evaluating a strategy's historical performance and stress characteristics.
+compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
 
 # Strategy Health Check

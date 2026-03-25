@@ -267,6 +267,10 @@ If the user wants to test exit rule changes, use `batch_exit_analysis` with the 
 
 **Note:** Delta thresholds use decimal format (0.70, not 70). OO uses whole numbers.
 
+## Reference
+
+- For DC mechanics, term structure, curve fitting principles, and common failure modes, see [references/dc-mechanics.md](references/dc-mechanics.md)
+
 ## What NOT to Do
 
 - Don't assume S/L ratio filtering works for all DCs — test it first
