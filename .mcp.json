@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tradeblocks": {
+      "command": "node",
+      "args": ["${PLUGIN_DIR}/node_modules/tradeblocks-mcp/server/index.js"],
+      "env": {
+        "TRADEBLOCKS_DATA_DIR": "${HOME}/tradeblocks-data"
+      }
+    }
+  }
+}

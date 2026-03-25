@@ -1,0 +1,9 @@
+{
+  "name": "tradeblocks-skills",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent skills and MCP server for TradeBlocks — Option Omega backtest analysis",
+  "dependencies": {
+    "tradeblocks-mcp": "^2.1.0"
+  }
+}

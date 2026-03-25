@@ -1,0 +1,28 @@
+{
+  "name": "tradeblocks-skills",
+  "owner": {
+    "name": "David Romeo",
+    "email": "davidmromeo@gmail.com"
+  },
+  "metadata": {
+    "description": "TradeBlocks agent skills for Option Omega backtest analysis and options trading portfolios",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "tradeblocks",
+      "description": "Full TradeBlocks plugin — MCP server + analysis skills for Option Omega backtests and live trading portfolios. Includes strategy health checks, double calendar workshopping, exit trigger simulation, walk-forward analysis, regime performance, risk assessment, strategy comparison, and parameter optimization.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/tradeblocks-dc-analysis",
+        "./skills/tradeblocks-health-check",
+        "./skills/tradeblocks-wfa",
+        "./skills/tradeblocks-risk",
+        "./skills/tradeblocks-compare",
+        "./skills/tradeblocks-portfolio",
+        "./skills/tradeblocks-optimize"
+      ]
+    }
+  ]
+}
