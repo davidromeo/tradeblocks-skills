@@ -1,5 +1,5 @@
 ---
-name: tradeblocks-market-data
+name: market-data
 description: Import and set up market data for TradeBlocks analysis. Guides through importing daily OHLCV, VIX term structure, and intraday option bars from API, CSV, or DuckDB sources. Use when market data is missing, regime analysis shows no matches, replay returns empty paths, or enrich_trades shows warnings.
 compatibility: Requires TradeBlocks MCP server. API imports require MASSIVE_API_KEY env var.
 ---

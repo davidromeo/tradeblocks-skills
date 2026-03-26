@@ -1,5 +1,5 @@
 ---
-name: tradeblocks-health-check
+name: health-check
 description: Strategy health check for trading backtests. Analyzes performance metrics, runs stress tests, and surfaces risk indicators. Use when evaluating a strategy's historical performance and stress characteristics.
 compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
@@ -109,8 +109,8 @@ For detailed explanations of each metric, see [references/metrics.md](references
 ## Related Skills
 
 After health check, the user may want to:
-- `/tradeblocks-wfa` - Test if optimized parameters hold up on unseen data
-- `/tradeblocks-risk` - Deep dive into position sizing and tail risk analysis
+- `/tradeblocks:wfa` - Test if optimized parameters hold up on unseen data
+- `/tradeblocks:risk` - Deep dive into position sizing and tail risk analysis
 
 ## Notes
 

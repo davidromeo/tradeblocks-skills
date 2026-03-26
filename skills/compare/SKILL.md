@@ -1,5 +1,5 @@
 ---
-name: tradeblocks-compare
+name: compare
 description: Performance comparison for trading strategies. Compare backtest vs actual results, strategy vs strategy metrics, or period vs period performance. Use when exploring differences between theoretical and live execution, understanding how two strategies relate, or analyzing performance across time periods.
 compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
@@ -136,9 +136,9 @@ For detailed explanation of scaling modes, see [references/scaling.md](reference
 ## Related Skills
 
 After comparison analysis:
-- `/tradeblocks-health-check` - Deep dive into either strategy
-- `/tradeblocks-portfolio` - Explore correlation and diversification
-- `/tradeblocks-wfa` - Test parameter robustness
+- `/tradeblocks:health-check` - Deep dive into either strategy
+- `/tradeblocks:portfolio` - Explore correlation and diversification
+- `/tradeblocks:wfa` - Test parameter robustness
 
 ## Notes
 

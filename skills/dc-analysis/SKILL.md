@@ -1,5 +1,5 @@
 ---
-name: tradeblocks-dc-analysis
+name: dc-analysis
 description: Double calendar health check and optimization. Analyzes a DC strategy's performance, exit attribution, VIX regime fit, S/L ratio impact, edge decay, and predictive fields. Loads the strategy profile for context. Use when evaluating, diagnosing, or tuning a double calendar backtest, or when the user mentions "DC analysis", "calendar analysis", or "analyze my DC".
 compatibility: Requires TradeBlocks MCP server with trade data loaded
 metadata:

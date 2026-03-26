@@ -1,5 +1,5 @@
 ---
-name: tradeblocks-optimize
+name: optimize
 description: Parameter exploration for trading backtests. Analyzes trade data to find patterns across parameters like time of day, DTE, delta ranges, and market conditions. Use when exploring which parameters performed differently or understanding strategy behavior across conditions.
 compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
@@ -166,9 +166,9 @@ For detailed guidance on interpreting optimization results and avoiding overfitt
 ## Related Skills
 
 After parameter exploration:
-- `/tradeblocks-wfa` - Test if patterns hold on out-of-sample data
-- `/tradeblocks-health-check` - Full metrics review
-- `/tradeblocks-compare` - Compare different parameter settings
+- `/tradeblocks:wfa` - Test if patterns hold on out-of-sample data
+- `/tradeblocks:health-check` - Full metrics review
+- `/tradeblocks:compare` - Compare different parameter settings
 
 ## Common Scenarios
 
@@ -198,7 +198,7 @@ After parameter exploration:
 - **Historical patterns may not persist** - markets and conditions change
 - **Small sample sizes are noisy** - 30+ trades per bucket for meaningful comparison
 - **Multiple testing inflates apparent significance** - be skeptical of "best" findings
-- **Validate with walk-forward** - use `/tradeblocks-wfa` for out-of-sample testing
+- **Validate with walk-forward** - use `/tradeblocks:wfa` for out-of-sample testing
 - **Consider why** - patterns with logical explanations are more likely to persist
 
 ## Notes

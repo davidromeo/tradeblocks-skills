@@ -15,14 +15,14 @@
       "source": "./",
       "strict": true,
       "skills": [
-        "./skills/tradeblocks-dc-analysis",
-        "./skills/tradeblocks-health-check",
-        "./skills/tradeblocks-wfa",
-        "./skills/tradeblocks-risk",
-        "./skills/tradeblocks-compare",
-        "./skills/tradeblocks-portfolio",
-        "./skills/tradeblocks-optimize",
-        "./skills/tradeblocks-market-data"
+        "./skills/dc-analysis",
+        "./skills/health-check",
+        "./skills/wfa",
+        "./skills/risk",
+        "./skills/compare",
+        "./skills/portfolio",
+        "./skills/optimize",
+        "./skills/market-data"
       ]
     }
   ]

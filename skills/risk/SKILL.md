@@ -1,5 +1,5 @@
 ---
-name: tradeblocks-risk
+name: risk
 description: Risk analysis for trading strategies including Kelly criterion calculations, tail risk metrics, and Monte Carlo projections. Use when exploring position sizing, capital allocation, or understanding worst-case characteristics.
 compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
@@ -152,8 +152,8 @@ Present these as insights from the historical data, letting the user decide what
 ## Related Skills
 
 After risk analysis:
-- `/tradeblocks-health-check` - Full metrics overview
-- `/tradeblocks-wfa` - Test parameter robustness
+- `/tradeblocks:health-check` - Full metrics overview
+- `/tradeblocks:wfa` - Test parameter robustness
 
 ## Notes
 

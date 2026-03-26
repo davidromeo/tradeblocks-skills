@@ -1,5 +1,5 @@
 ---
-name: tradeblocks-portfolio
+name: portfolio
 description: Portfolio analysis for trading strategies. Explores correlation, diversification, and combined performance characteristics. Use when understanding how strategies relate, exploring diversification effects, or analyzing portfolio composition.
 compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
@@ -138,9 +138,9 @@ Present these as insights from the historical data. The user can decide what fit
 ## Related Skills
 
 After portfolio analysis:
-- `/tradeblocks-compare` - Deep comparison of specific strategy pairs
-- `/tradeblocks-risk` - Position sizing and Kelly analysis
-- `/tradeblocks-health-check` - Full metrics on any strategy
+- `/tradeblocks:compare` - Deep comparison of specific strategy pairs
+- `/tradeblocks:risk` - Position sizing and Kelly analysis
+- `/tradeblocks:health-check` - Full metrics on any strategy
 
 ## Common Scenarios
 

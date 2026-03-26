@@ -79,7 +79,7 @@ The problem: Strategies that appear uncorrelated in normal markets often become 
 - Forced selling affects all assets
 - Risk-off behavior is universal
 
-**Implication:** Don't assume correlation stays constant. Use `/tradeblocks-risk` for tail risk analysis.
+**Implication:** Don't assume correlation stays constant. Use `/tradeblocks:risk` for tail risk analysis.
 
 ## Correlation Stability
 
