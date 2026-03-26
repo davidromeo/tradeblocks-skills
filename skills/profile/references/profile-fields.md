@@ -75,14 +75,37 @@ S  B  C  P  |  QTY  |  Δ/±  |  value  |  DTE
 - **C** (teal/green) = Call
 - **P** (pink/red) = Put
 - **Δ** = delta-based strike → `strikeMethod: "delta"`
-- **±** = strike offset → `strikeMethod: "offset"`
+- **±** = strike offset from Current Price → `strikeMethod: "offset"`
+- **↔** = strike offset from a non-default reference price → `strikeMethod: "offset"` — capture the reference price in the `strike` string field
 
-Example from a 2/4 DC screenshot:
+### Strike Offset Reference Prices
+
+When `strikeMethod` is `offset`, OO allows selecting what price the offset is relative to:
+
+| OO Setting | Description | How to Record |
+|------------|-------------|---------------|
+| Current Price | Offset from current underlying price (default) | `strike: "10-point offset"` |
+| Current Day's Open | Offset from the day's opening price | `strike: "10-point offset from Day Open"` |
+| Previous Day's Close | Offset from prior day's close | `strike: "10-point offset from Prev Close"` |
+| Previous Week's Close | Offset from prior week's close | `strike: "10-point offset from Prev Week Close"` |
+| Current Week's Open | Offset from current week's open | `strike: "10-point offset from Week Open"` |
+
+The reference price is visible in the OO strategy editor (dropdown next to "Strike Offset"). In the compact screenshot view, `↔` indicates a non-default reference price — check the strategy subtitle or notes for which one.
+
+### Example: Standard DC (equal quantities, delta strikes)
 ```
 S B C P | 1 QTY | 20 Δ | 2 DTE  → short_put, 20-delta, 2-DTE
 S B C P | 1 QTY |  0 ± | 4 DTE  → short_call, 0-offset (ATM), 4-DTE
 S B C P | 1 QTY | 20 Δ | 2 DTE  → long_call, 20-delta, 2-DTE
 S B C P | 1 QTY |  0 ± | 4 DTE  → long_put, 0-offset (ATM), 4-DTE
+```
+
+### Example: Ratio DC with mixed strike methods
+```
+S B C P | 3 QTY | 10 ↔ | 1 DTE  → short_call, 10-offset from Day Open, 1-DTE, x3
+S B C P | 3 QTY | 25 ± | 10 DTE → long_call, 25-offset, 10-DTE, x3
+S B C P | 2 QTY | 45 Δ | 1 DTE  → short_put, 45-delta, 1-DTE, x2
+S B C P | 2 QTY | -25 ± | 10 DTE → long_put, -25-offset, 10-DTE, x2
 ```
 
 The highlighted letters indicate which markers are active for that leg.

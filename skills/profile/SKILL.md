@@ -42,18 +42,20 @@ Ask the user for their strategy details. Lead with the screenshot request — it
 |-------|-------------------|
 | `underlying` | Underlying card (e.g., "QQQ", "SPX") |
 | `structureType` | Infer from legs — 4 legs with 2 DTE groups = double_calendar, etc. |
-| `strategyName` | Title bar (e.g., "Monday 2/4 DC - QQQ") |
+| `strategyName` | Title bar (e.g., "Monday 2/4 DC - QQQ") — also check the subtitle line for structural notes (e.g., "Call strikes are offset DAY OPEN") |
 | `legs` | Legs card — each row shows S/B/C/P markers, QTY, delta or offset, DTE |
-| `exitRules` | Exit card — profit target %, time exit, "Exit using leg delta(s)" |
+| `exitRules` | Exit card — profit target %, time exit, "Exit using leg delta(s)". OO may show separate exit cards per side (e.g., "Exit - Put Side", "Exit - Call Side") — record each as a separate exit rule with the side noted in the `description` field |
 | `positionSizing` | Entry card — allocation %, max contracts; or Allocation card in portfolio view |
 | `keyMetrics` | Performance cards — P/L, CAGR, Sharpe, Sortino, Win%, Max DD, etc. |
 
 **Leg interpretation from the screenshot:**
 - `S` (red) = Sell, `B` (green) = Buy — these indicate short/long
 - `C` = Call, `P` = Put
-- `Delta` column with `Δ` symbol = delta-based strike selection
-- `±` symbol = strike offset method
+- `Δ` symbol = delta-based strike selection (`strikeMethod: "delta"`)
+- `±` symbol = strike offset from Current Price (`strikeMethod: "offset"`)
+- `↔` symbol = strike offset from a reference price other than Current Price — check the strategy subtitle or ask the user. Options: Current Day's Open, Previous Day's Close, Previous Week's Close, Current Week's Open
 - `DTE` column = days to expiration for that leg
+- Legs may have unequal quantities (e.g., 3 calls / 2 puts) — capture exact QTY per leg
 
 **If no screenshot:** Ask the user to describe:
 - Underlying and structure type
@@ -73,6 +75,22 @@ Only ask about fields that are ambiguous or missing from the screenshot. Common 
 | Strategy thesis | "In one sentence, what's the thesis behind this strategy?" (optional) |
 | Block mapping | "What's the block name in TradeBlocks? The test name '[screenshot name]' may differ from the block ID." |
 
+**Mapping OO filter names to TradeBlocks `entryFilters`:**
+
+OO uses its own terminology for entry conditions. Map them to TradeBlocks field names:
+
+| OO Entry Condition | `entryFilters` field | source |
+|--------------------|---------------------|--------|
+| VIX Move Up: Min X% | `vixChangePct`, operator: `>=`, value: X | `market` |
+| VIX below/above X | `VIX_Close`, operator: `<`/`>`, value: X | `market` |
+| RSI between X-Y | `RSI_14`, operator: `between`, value: [X, Y] | `market` |
+| Use ORB - [time] (Low/High/Both) | Document as execution filter with description | `execution` |
+| Open trades at/between [time] | Document as execution filter | `execution` |
+| Every [day(s)] | Document as execution filter | `execution` |
+| Use exact DTE / Use exact strike offsets | Document as execution filter | `execution` |
+
+If an OO filter doesn't have an obvious TradeBlocks field mapping, record it as an execution filter with a descriptive `description` field.
+
 **Do not ask about fields that can be verified from the block data** — handle those in Step 4.
 
 ### Step 4: Verify From Block Data
@@ -81,10 +99,16 @@ Use the block's trade data to verify and fill fields rather than assuming from s
 
 | Field | How to Verify | Tool |
 |-------|---------------|------|
-| `greeksBias` | Check actual greeks exposure across trades | `decompose_greeks` |
-| `reEntry` | Check if multiple entries occur on the same day | `run_sql`: `SELECT date_opened, COUNT(*) as entries FROM trades.trade_data WHERE block_id = '...' GROUP BY date_opened HAVING COUNT(*) > 1` |
+| `greeksBias` | See greeks verification chain below | `decompose_greeks` → fallback |
+| `reEntry` | Check if multiple entries occur on the same day | `run_sql`: `SELECT date_opened, COUNT(*) as entries FROM trades.trade_data WHERE block_id = '...' GROUP BY date_opened HAVING COUNT(*) > 1`. **Important:** Multiple entries in the data may reflect manual trades, not strategy design. If the SQL returns results, ask the user to confirm whether re-entry is part of the strategy rules or was a one-off. |
 | `capLosses` / `capProfits` | Check actual P/L distribution for structural caps | `get_field_statistics` on `netPl` or `plPct` |
 | `closeOnCompletion` | Check if all legs close simultaneously | `run_sql` to examine leg-level close behavior |
+
+**Greeks bias verification chain:**
+1. Try `decompose_greeks` on a recent trade (it runs replay internally and auto-fetches intraday data from Massive.com if `MASSIVE_API_KEY` is set).
+2. If it returns 0 steps — no intraday data is available. Try a few different `trade_index` values (recent trades are more likely to have data).
+3. If still no data — infer `greeksBias` from the structure (e.g., short front / long back calendar = theta_positive), present the inference to the user, and flag it as unverified: "I couldn't verify this from trade data — does this match your understanding?"
+4. If the user wants verified greeks, suggest running `/tradeblocks:market-data` to import intraday option data first, then retry.
 
 After running these checks, ask the user:
 
@@ -192,3 +216,5 @@ For details on profile field definitions, Option Omega screenshot parsing, and c
 - Don't skip the block mapping question — test names and block IDs often differ
 - Don't create a profile without confirming with the user first
 - Don't ask 10 questions when a screenshot answers 8 of them
+- Don't auto-set `reEntry: true` from data alone — multiple entries may be manual trades, not strategy rules. Confirm with the user.
+- Don't assume all sides share the same exit rules — OO supports per-side exits (e.g., put side gets a time exit, call side doesn't). Check each exit card separately.
