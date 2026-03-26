@@ -11,10 +11,11 @@
   "plugins": [
     {
       "name": "tradeblocks",
-      "description": "Full TradeBlocks plugin — MCP server + analysis skills for Option Omega backtests and live trading portfolios. Includes strategy health checks, double calendar workshopping, exit trigger simulation, walk-forward analysis, regime performance, risk assessment, strategy comparison, and parameter optimization.",
+      "description": "Full TradeBlocks plugin — MCP server + analysis skills for Option Omega backtests and live trading portfolios. Includes strategy profiling, health checks, double calendar workshopping, exit trigger simulation, walk-forward analysis, regime performance, risk assessment, strategy comparison, and parameter optimization.",
       "source": "./",
       "strict": true,
       "skills": [
+        "./skills/profile",
         "./skills/dc-analysis",
         "./skills/health-check",
         "./skills/wfa",
