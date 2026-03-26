@@ -1,12 +1,12 @@
 # TradeBlocks Skills
 
-Agent skills and MCP server for analyzing Option Omega backtests and options trading portfolios. Works with [Claude Code](https://claude.ai/code), [Claude.ai](https://claude.ai), and other [Agent Skills](https://agentskills.io)-compatible tools.
+Agent skills for analyzing Option Omega backtests and options trading portfolios. Works with [Claude Code](https://claude.ai/code), [Claude.ai](https://claude.ai), and other [Agent Skills](https://agentskills.io)-compatible tools.
+
+Requires the [TradeBlocks](https://github.com/davidromeo/tradeblocks) MCP server to be running.
 
 ## What's included
 
-**MCP Server** — 50+ tools for querying trade data, running simulations, and analyzing performance. Replays trades with minute-level greeks, tests exit policies, segments by market regime, and more.
-
-**Skills** — Guided workflows that chain the tools together for common analysis tasks:
+Guided workflows that chain TradeBlocks MCP tools together for common analysis tasks:
 
 | Skill | What it does |
 |-------|-------------|
@@ -35,19 +35,6 @@ Then install the plugin:
 /plugin install tradeblocks@tradeblocks-skills
 ```
 
-### Claude Code (manual)
-
-```bash
-# Clone the repo
-git clone https://github.com/davidromeo/tradeblocks-skills.git
-
-# Install the MCP server
-cd tradeblocks-skills && npm install
-
-# Load as a plugin
-claude --plugin-dir ./tradeblocks-skills
-```
-
 ### Manual skill installation
 
 Copy any skill folder into your `.claude/skills/` directory:
@@ -58,6 +45,7 @@ cp -r skills/tradeblocks-dc-analysis ~/.claude/skills/
 
 ## Prerequisites
 
+- **TradeBlocks MCP server**: Must be installed and running — see [TradeBlocks](https://github.com/davidromeo/tradeblocks)
 - **Trade data**: Export your Option Omega backtests as CSV (tradelog format)
 - **Market data**: Import SPX/QQQ daily OHLCV and VIX context for regime analysis
 - **API key** (optional): Set `MASSIVE_API_KEY` for automatic intraday data fetching during trade replay

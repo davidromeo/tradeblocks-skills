@@ -4,28 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-A Claude Code plugin that bundles an MCP server (`tradeblocks-mcp`) with guided analysis skills for Option Omega backtests and options trading portfolios. The plugin is distributed via the Agent Skills marketplace.
+A Claude Code plugin providing guided analysis skills for Option Omega backtests and options trading portfolios. Requires the [TradeBlocks](https://github.com/davidromeo/tradeblocks) MCP server to be running separately. Distributed via the Agent Skills marketplace.
 
 ## Architecture
 
 ```
 .claude-plugin/       Plugin metadata (plugin.json, marketplace.json)
-.mcp.json             MCP server config — launches tradeblocks-mcp from node_modules
 skills/               8 skill directories, each with SKILL.md + references/
-package.json          Minimal wrapper — only dependency is tradeblocks-mcp
 ```
 
-**Skills are workflow choreographers, not implementations.** Each SKILL.md describes a multi-step analysis workflow that invokes MCP tools in sequence. The actual logic lives in the `tradeblocks-mcp` npm package (50+ tools for trade queries, simulations, and analysis).
+**Skills are workflow choreographers, not implementations.** Each SKILL.md describes a multi-step analysis workflow that invokes MCP tools in sequence. The actual logic lives in the TradeBlocks MCP server (50+ tools for trade queries, simulations, and analysis), which users install separately.
 
 **Reference files are interpretation guides.** Each `references/*.md` explains how to read analysis results — thresholds, tables, domain-specific nuance. Skills link to them contextually, not as prerequisites.
 
 ## Setup
 
-```bash
-npm install   # installs tradeblocks-mcp dependency
-```
-
-No build, lint, or test steps — skills are static markdown.
+No build, lint, or test steps — skills are static markdown. The TradeBlocks MCP server must be installed and running separately.
 
 ## Skill Structure
 
@@ -45,12 +39,8 @@ Followed by: Prerequisites → Process (numbered steps with specific MCP tool ca
 ## Plugin Distribution
 
 - `.claude-plugin/plugin.json` — name, version, author for the plugin itself
-- `.claude-plugin/marketplace.json` — lists all skills, sets `strict: false` (skills work without full MCP), defines marketplace entry
+- `.claude-plugin/marketplace.json` — lists all skills, sets `strict: true`, defines marketplace entry
 - Install path: `/plugin marketplace add davidromeo/tradeblocks-skills` then `/plugin install tradeblocks@tradeblocks-skills`
-
-## MCP Server
-
-Configured in `.mcp.json`. Runs `tradeblocks-mcp/server/index.js` from node_modules with `TRADEBLOCKS_DATA_DIR` set to `~/tradeblocks-data`. The server provides DuckDB-backed tools for importing, querying, and analyzing trade data.
 
 ## Domain Concepts
 
