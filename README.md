@@ -23,8 +23,15 @@ Agent skills and MCP server for analyzing Option Omega backtests and options tra
 
 ### Claude Code (plugin)
 
-```bash
+First, add the marketplace:
+
+```
 /plugin marketplace add davidromeo/tradeblocks-skills
+```
+
+Then install the plugin:
+
+```
 /plugin install tradeblocks@tradeblocks-skills
 ```
 
