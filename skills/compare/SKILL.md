@@ -1,6 +1,6 @@
 ---
 name: compare
-description: Performance comparison for trading strategies. Compare backtest vs actual results, strategy vs strategy metrics, or period vs period performance. Use when exploring differences between theoretical and live execution, understanding how two strategies relate, or analyzing performance across time periods.
+description: Performance comparison for trading strategies. Compare backtest vs actual results, strategy vs strategy metrics, block vs block, or period vs period performance. Use when exploring differences between theoretical and live execution, understanding how two strategies relate, or analyzing performance across time periods.
 compatibility: Requires TradeBlocks MCP server with trade data loaded
 ---
 
@@ -13,7 +13,8 @@ Explore differences between strategies, execution modes, or time periods.
 - TradeBlocks MCP server running
 - At least one block with trade data loaded
 - For backtest vs actual: Both trade log and reporting log for the same strategy
-- For strategy vs strategy: Two blocks or multiple strategies in one block
+- For strategy vs strategy: Multi-strategy block or two blocks
+- For block vs block: Two or more blocks
 
 ## Process
 
@@ -21,11 +22,12 @@ Explore differences between strategies, execution modes, or time periods.
 
 Ask the user what they want to compare:
 
-| Type | Use Case | Required Data |
-|------|----------|---------------|
-| Backtest vs Actual | Explore theoretical vs live execution | Trade log + reporting log |
-| Strategy vs Strategy | Understand how two strategies relate | Two blocks or multi-strategy block |
-| Period vs Period | Analyze same strategy across different time ranges | One block with sufficient history |
+| Type | Use Case | Primary Tool |
+|------|----------|--------------|
+| Backtest vs Actual | Explore theoretical vs live execution | `compare_backtest_to_actual` |
+| Strategy vs Strategy (same block) | Compare strategies within a portfolio | `get_strategy_comparison` |
+| Block vs Block | Compare separate portfolios side-by-side | `compare_blocks` / `block_diff` |
+| Period vs Period | Analyze same strategy across time ranges | `get_period_returns` |
 
 Ask: "What would you like to compare?"
 
@@ -39,6 +41,10 @@ Use `compare_backtest_to_actual` to explore how theoretical performance compares
 - `strategy`: Optional filter to specific strategy
 - `dateRange`: Optional date filter
 - `matchedOnly`: Only include trades where both backtest and actual exist
+- `groupBy`: Group results by `"none"`, `"strategy"`, `"date"`, `"week"`, or `"month"`
+- `detailLevel`: `"summary"` (aggregate by date+strategy) or `"trades"` (individual trade comparison with field-by-field differences)
+- `outliersOnly`: Only return high-slippage outliers (z-score threshold)
+- `outliersThreshold`: Z-score threshold for outlier detection (default: 2)
 
 **Scaling modes** (see [references/scaling.md](references/scaling.md)):
 
@@ -48,39 +54,51 @@ Use `compare_backtest_to_actual` to explore how theoretical performance compares
 | `perContract` | Divides each P&L by contract count | Comparing per-lot performance regardless of size |
 | `toReported` | Scales backtest DOWN to match actual contract count | Backtest uses more contracts than actual |
 
+**Recommended approach:**
+1. Start with `groupBy: "strategy"` and `scaling: "perContract"` for an overview
+2. Drill into specific strategies with `groupBy: "month"` to spot trends
+3. Use `outliersOnly: true` to find the worst slippage trades
+4. Use `detailLevel: "trades"` for field-by-field comparison on outliers
+
 **Tool returns:**
-- Per-date comparison with backtest vs actual P&L
+- Per-date/strategy comparison with backtest vs actual P&L
 - Slippage calculation (actual minus backtest)
 - Match status (whether both sides exist for each date)
 - Summary totals and average slippage percentage
+- Outlier detection with z-scores
 
 Present findings from the data:
 - **Total backtest P&L** vs **Total actual P&L** (at selected scaling)
 - **Matched trade count** (how many dates have both)
 - **Average slippage** (percentage deviation from backtest)
 - **Unmatched trades** (missed fills or extra trades)
+- **Outliers** (trades with unusually high slippage)
 
-### Step 2b: Strategy vs Strategy Comparison
+### Step 2b: Strategy vs Strategy Comparison (Same Block)
 
-For comparing two different strategies:
+For comparing strategies within the same block, use `get_strategy_comparison`:
 
-1. Use `get_statistics` on each block (or with `strategy` filter)
-2. Use `get_correlation_matrix` to understand how they move together
+**Key parameters:**
+- `blockId`: Block folder name
+- `sortBy`: `"netPl"`, `"winRate"`, `"trades"`, `"profitFactor"`, `"name"`
+- `sortOrder`: `"asc"` or `"desc"`
+- `minTrades`: Minimum trades per strategy to include
+- `startDate` / `endDate`: Optional date filters
 
-**Key parameters for correlation:**
-- `method`: "kendall" (robust, rank-based), "spearman" (rank), "pearson" (linear)
-- `alignment`: "shared" (only days both traded) or "zero-pad" (fill missing with 0)
-- `timePeriod`: "daily", "weekly", or "monthly" aggregation
+**Tool returns per strategy:**
+- Trade count, win rate, net P&L
+- Average win, average loss
+- Profit factor
 
-Present side-by-side metrics:
+Present as a ranked table:
 
-| Metric | Strategy A | Strategy B |
-|--------|------------|------------|
-| Net P&L | | |
-| Sharpe Ratio | | |
-| Max Drawdown | | |
-| Win Rate | | |
-| Profit Factor | | |
+| Strategy | Trades | Win Rate | Net P&L | Profit Factor |
+|----------|--------|----------|---------|---------------|
+| ... | ... | ... | ... | ... |
+
+For deeper comparison between two specific strategies, also run:
+- `get_correlation_matrix` to understand how they move together
+- `get_statistics` on each (with `strategy` filter) for full metric suites
 
 **Correlation context:**
 - Very low (<0.2): Strategies move independently
@@ -88,16 +106,34 @@ Present side-by-side metrics:
 - Moderate (0.4-0.6): Shared behavior
 - High (>0.6): Similar movements, less diversification
 
-### Step 2c: Period vs Period Comparison
+### Step 2c: Block vs Block Comparison
+
+For comparing separate portfolio blocks:
+
+**Option 1: Side-by-side metrics** via `compare_blocks`:
+- `blockIds`: Array of block IDs (max 5)
+- `metrics`: Optional filter to specific metrics (e.g., `["sharpeRatio", "maxDrawdown", "profitFactor"]`)
+- `sortBy`: Sort by any metric
+
+**Option 2: Strategy overlap analysis** via `block_diff`:
+- `blockIdA`: First block (baseline)
+- `blockIdB`: Second block (comparison target)
+- Shows shared vs unique strategies between blocks
+- Calculates performance deltas for shared strategies
+
+Use `compare_blocks` for a quick overview, then `block_diff` when blocks share strategies and you want to understand what changed.
+
+### Step 2d: Period vs Period Comparison
 
 For analyzing performance across time:
 
 Use `get_period_returns` with period type and optional date filters.
 
 **Key parameters:**
-- `period`: "monthly", "weekly", or "daily"
+- `period`: `"monthly"`, `"weekly"`, or `"daily"`
 - `dateRange`: Optional filter to specific time range
 - `normalizeTo1Lot`: Normalize for fair comparison across different position sizes
+- `strategy`: Optional strategy filter
 
 Present period breakdown:
 - Performance by month/quarter/year
@@ -114,7 +150,7 @@ Questions to explore:
 Synthesize the data into what stands out:
 
 **Comparison Summary:**
-- What was compared: [backtest vs actual / strategy A vs B / period X vs Y]
+- What was compared: [backtest vs actual / strategy A vs B / block X vs Y / period X vs Y]
 - Key observation: [Most notable difference from the data]
 - Magnitude: [Size of the divergence]
 

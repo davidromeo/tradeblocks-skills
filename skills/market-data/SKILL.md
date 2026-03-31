@@ -62,6 +62,10 @@ Present what's available and what's missing for their goal.
 
 **Order matters:** Import daily first, then context, then enrichment runs automatically.
 
+**Useful flags:**
+- `dry_run: true` — validates parameters and shows what would be imported without writing
+- `skip_enrichment: true` — skips automatic enrichment (useful when batching multiple imports, then run `enrich_market_data` once at the end)
+
 **Date range:** Match the trade data range. Check with:
 ```sql
 SELECT MIN(date_opened) as earliest, MAX(date_opened) as latest
@@ -203,6 +207,10 @@ If `Term_Structure_State` is all NULL, VIX3M data is missing — run the context
 | Enrichment fields missing (RSI, ATR) | `enrich_market_data` not run | Run it manually for the ticker |
 | API import returns 0 rows | Date range outside provider coverage | Try a more recent date range |
 | CSV import fails on column mapping | Wrong column names | Use `dry_run: true` first to preview |
+
+## Cleanup
+
+Use `purge_market_table` to remove market data when needed (e.g., corrupted import, wrong ticker). This deletes rows from the specified table matching a ticker and optional date range.
 
 ## What NOT to Do
 

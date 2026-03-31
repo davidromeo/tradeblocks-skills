@@ -87,7 +87,21 @@ If correlation > 0.05, run `filter_curve` on `openingSLRatio` to find the optima
 
 Also check if `closingShortLongRatio` has strong negative correlation (it usually does) — this confirms S/L ratio as a structural health indicator for the trade.
 
-### Step 5: VIX Regime Performance
+### Step 5: Structure Fit Analysis
+
+If the strategy has a profile, run `analyze_structure_fit` with the block and strategy name. This provides a multi-dimensional breakdown of how well the strategy fits various market conditions, using the profile to contextualize results.
+
+**Tool returns:**
+- Performance by Vol_Regime, day-of-week, time-of-day
+- Profile-derived dimension analysis (entry filters, DTE, deltas)
+- `profile_update_hints` when data shows patterns diverging from profile settings
+- Thin-data warnings for small buckets
+
+Surface any `profile_update_hints` — these are actionable suggestions where the data contradicts the profile's assumptions.
+
+If no profile exists, fall back to `analyze_regime_performance` with `segmentBy: "volRegime"` instead.
+
+### Step 6: VIX Regime Performance
 
 Run `analyze_regime_performance` with `segmentBy: "volRegime"`.
 
@@ -108,7 +122,7 @@ Build a regime table and flag the sweet spot vs danger zones:
 - If a regime has <10 trades, flag as thin data.
 - Compare to profile's `expectedRegimes` if set.
 
-### Step 6: Edge Decay Check
+### Step 7: Edge Decay Check
 
 Run `analyze_edge_decay` for the block.
 
@@ -124,7 +138,7 @@ Flag any of these:
 - Recent Sharpe < 50% of historical Sharpe
 - Current streak is worst-ever losing streak
 
-### Step 7: Predictive Fields Deep Dive
+### Step 8: Predictive Fields Deep Dive
 
 From Step 4's `find_predictive_fields` results, surface the top 5 actionable fields beyond the output-derived ones (exclude netPl, plPct, rom, isWinner, maxProfit, maxLoss, etc.).
 
@@ -141,19 +155,33 @@ Actionable fields to look for:
 
 For any field with |correlation| > 0.1, note it as a potential filter candidate.
 
-### Step 8: Curve Fit Detection
+### Step 9: Curve Fit Detection
 
 Before making any recommendations, test whether the current setup is robust or overfit. Run these checks in order — each one builds on the previous.
 
-#### 8a. Baseline Sanity Check
+#### 9a. Entry Filter Validation
 
-The strategy should be profitable WITHOUT entry filters. Use `get_statistics` and compare:
-- Full block stats (already from Step 2) = the filtered backtest
-- If profile has market-testable entry filters (VIX, RSI, S/L ratio min), estimate what the unfiltered baseline looks like
+If the strategy has a profile with entry filters, run `validate_entry_filters` with the block and strategy name. This is the most direct test of whether filters help or hurt.
+
+**Tool returns:**
+- Per-filter comparison: entered trades vs filtered-out trades (full stat suite for both groups)
+- Ablation study: removes one filter at a time and tests all pairs
+- `profile_update_hints` when filters appear counterproductive
+
+**What to look for:**
+- A filter is **helping** if entered trades outperform filtered-out trades on profit factor and win rate
+- A filter is **hurting** if filtered-out trades actually perform better (the filter is excluding winners)
+- The ablation study shows which filters interact — some only work in combination
+
+Also run `suggest_filters` to see if there are market-based filters the data suggests but the profile doesn't use. This tool analyzes losing trades and suggests filters that would have improved performance. Pass `strategyName` to cross-reference suggestions against existing profile filters.
+
+#### 9b. Baseline Sanity Check
+
+The strategy should be profitable WITHOUT entry filters. Use the `validate_entry_filters` ablation results to see what happens when all filters are removed.
 
 Ask: "Is this strategy only profitable BECAUSE of the filters?" If removing all filters makes it a net loser, the filters are creating edge — that's curve fitting. Filters should IMPROVE an already-positive baseline, not rescue a broken structure.
 
-#### 8b. Parameter Sensitivity (Adjacent Value Test)
+#### 9c. Parameter Sensitivity (Adjacent Value Test)
 
 For each numeric filter or exit threshold in the profile, run `filter_curve` to check if small changes destroy the result:
 
@@ -170,9 +198,9 @@ For each numeric filter or exit threshold in the profile, run `filter_curve` to 
 
 Present the filter_curve results as a table showing performance at each threshold step. Look for smooth gradients, not cliffs.
 
-#### 8c. Walk-Forward OOS Check
+#### 9d. Walk-Forward OOS Check
 
-From Step 6's edge decay data, extract the walk-forward efficiency ratios:
+From Step 7's edge decay data, extract the walk-forward efficiency ratios:
 
 | Metric | Recent OOS Efficiency | Historical OOS Efficiency | Verdict |
 |--------|----------------------|--------------------------|---------|
@@ -186,9 +214,9 @@ From Step 6's edge decay data, extract the walk-forward efficiency ratios:
 - OOS efficiency < 0.5 = significant IS/OOS gap, possible overfitting
 - OOS efficiency declining over time = edge may be decaying or original fit was to a specific regime
 
-#### 8d. Year-over-Year Consistency
+#### 9e. Year-over-Year Consistency
 
-From Step 6's period metrics, check: does the strategy work in EVERY full year, or only some?
+From Step 7's period metrics, check: does the strategy work in EVERY full year, or only some?
 
 | Year | Win Rate | PF | Positive? |
 |------|----------|-----|-----------|
@@ -199,7 +227,7 @@ From Step 6's period metrics, check: does the strategy work in EVERY full year, 
 - Profitable in 3/4 years = acceptable, check if the bad year has an explanation (regime shift, etc.)
 - Profitable in only 1-2 years = high curve fit risk — the "edge" may be a specific market period
 
-#### 8e. Trade Count Check
+#### 9f. Trade Count Check
 
 After all filters are applied, how many trades per year remain?
 
@@ -212,12 +240,13 @@ After all filters are applied, how many trades per year remain?
 
 If filters cut more than 50% of trades, the question is: does the P&L per trade improve enough to justify the reduced sample?
 
-#### 8f. Curve Fit Verdict
+#### 9g. Curve Fit Verdict
 
 Summarize the findings:
 
 | Check | Result | Flag |
 |-------|--------|------|
+| Entry filters validated? | | PASS/WARN/FAIL |
 | Baseline profitable without filters? | | PASS/WARN/FAIL |
 | Parameter sensitivity smooth? | | PASS/WARN/FAIL |
 | Walk-forward OOS efficiency > 0.7? | | PASS/WARN/FAIL |
@@ -229,7 +258,7 @@ Summarize the findings:
 - **3 or fewer PASS:** Curve fit risk is significant — recommend simplifying filters
 - **Any FAIL on baseline:** The structure itself may not have edge — filters are papering over a broken thesis
 
-### Step 9: Synthesis and Recommendations
+### Step 10: Synthesis and Recommendations
 
 Bring it all together. Answer these questions:
 
@@ -237,7 +266,7 @@ Bring it all together. Answer these questions:
 2. **What's driving profits?** Which exit type makes the money?
 3. **What's causing losses?** Which exit type or regime is the biggest drag?
 4. **Is the edge decaying?** Yearly trends and recent performance
-5. **Is it overfit?** Curve fit verdict from Step 8
+5. **Is it overfit?** Curve fit verdict from Step 9
 6. **What would you change?** Based on the data:
    - Add/remove entry filters?
    - Adjust exit thresholds?

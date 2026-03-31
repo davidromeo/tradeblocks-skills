@@ -52,6 +52,8 @@ Walk-forward analysis answers different questions:
 | Check for potential overfitting | High IS but low OOS performance |
 | Evaluate consistency | How many OOS periods were profitable |
 | Understand parameter sensitivity | Parameter stability across windows |
+| Test strategy weight combinations | Use `parameterRanges` with strategy weights |
+| Test position sizing approaches | Use `parameterRanges` with Kelly/fraction params |
 
 Ask: "What are you trying to understand about this strategy?"
 
@@ -59,20 +61,57 @@ Ask: "What are you trying to understand about this strategy?"
 
 Call `run_walk_forward` with the selected block.
 
-**Key parameters:**
+**Core parameters:**
+- `blockId`: Block folder name
+- `strategy`: Filter to specific strategy
 - `isWindowCount`: Number of in-sample windows (default: 5)
 - `oosWindowCount`: Number of out-of-sample windows (default: 1)
-- `optimizationTarget`: Metric to optimize (default: sharpeRatio)
+- `optimizationTarget`: Metric to optimize (default: "sharpeRatio")
+  - Options: "netPl", "profitFactor", "sharpeRatio", "sortinoRatio", "calmarRatio", "cagr", "avgDailyPl", "winRate"
 - `minInSampleTrades`: Minimum trades in IS period (default: 10)
 - `minOutOfSampleTrades`: Minimum trades in OOS period (default: 3)
+- `normalizeTo1Lot`: Normalize trades to 1-lot (useful for pct_of_portfolio sizing)
+
+**Explicit window sizing (overrides window counts):**
+- `inSampleDays`: Explicit IS period in days
+- `outOfSampleDays`: Explicit OOS period in days
+- `stepSizeDays`: Days to slide forward each period (defaults to OOS days)
+
+**Parameter ranges for grid search:**
+- `parameterRanges`: Define sweep ranges as `{paramName: [min, max, step]}`
+
+| Parameter | What It Tests | Example |
+|-----------|--------------|---------|
+| `kellyMultiplier` | Kelly fraction scaling | `[0.25, 1.0, 0.25]` → tests 0.25x/0.5x/0.75x/1.0x |
+| `fixedFractionPct` | Fixed fraction sizing | `[1, 4, 1]` → tests 1-4% |
+| `fixedContracts` | Fixed contract count | `[1, 5, 1]` → tests 1-5 contracts |
+| `maxDrawdownPct` | Max drawdown constraint | `[15, 25, 5]` → rejects combos exceeding 15-25% |
+| `maxDailyLossPct` | Max single-day loss constraint | `[2, 5, 1]` |
+| `consecutiveLossLimit` | Max consecutive losers | `[3, 7, 1]` |
+| `strategy:StrategyName` | Per-strategy weight | `[0, 1, 0.5]` → tests include/exclude |
+
+Multiple parameters create a grid search across all combinations.
+
+**Risk constraints:**
+- `enableCorrelationConstraint`: Reject highly correlated strategy combinations (default: false)
+- `maxCorrelationThreshold`: Max allowed correlation (default: 0.7)
+- `enableTailRiskConstraint`: Reject high tail dependence combinations (default: false)
+- `maxTailDependenceThreshold`: Max allowed tail dependence (default: 0.5)
+- `minProfitFactor`: Reject combinations below this profit factor
+- `minSharpeRatio`: Reject combinations below this Sharpe
+- `requirePositiveNetPl`: Reject combinations with losses
+
+**Strategy selection:**
+- `selectedStrategies`: Filter to specific strategies (default: all)
+- `tickerFilter`: Filter by underlying ticker
 
 **For shorter histories (< 100 trades):**
-- Consider reducing `isWindowCount` to 3
+- Reduce `isWindowCount` to 3
 - Lower minimum trade counts
 
 **For longer histories (> 500 trades):**
 - Consider `isWindowCount` of 7+
-- Can use explicit `inSampleDays` and `outOfSampleDays` for more control
+- Use explicit `inSampleDays` and `outOfSampleDays` for more control
 
 ### Step 4: Interpret Results
 
@@ -121,6 +160,11 @@ Synthesize the analysis into what it reveals about the strategy:
 - Show IS vs OOS performance for each window
 - Highlight any windows with unusual behavior
 
+**Grid search results** (if parameterRanges used):
+- Best parameter combination found
+- How stable was the "best" across windows
+- Adjacent parameter performance (smooth gradient = robust, cliff = overfit)
+
 Present these as insights about what the historical data shows, not as trading advice.
 
 ## Interpretation Reference
@@ -132,6 +176,36 @@ For detailed walk-forward concepts, see [references/wfa-guide.md](references/wfa
 After walk-forward analysis:
 - `/tradeblocks:health-check` - Full metrics review
 - `/tradeblocks:risk` - Position sizing analysis
+- `/tradeblocks:optimize` - Parameter exploration
+
+## Common Scenarios
+
+### "Is my backtest overfit?"
+
+1. Run basic WFA with default settings
+2. If efficiency < 60%, the strategy may be fitting to noise
+3. Check parameter stability — high variation means parameters aren't robust
+4. Low consistency (< 50% OOS profitable) is a red flag
+
+### "Which strategy combination is most robust?"
+
+1. Use `parameterRanges` with `strategy:StrategyName` weights
+2. Enable `enableCorrelationConstraint` and `enableTailRiskConstraint`
+3. The optimizer will reject high-correlation, high-tail-risk combinations
+4. Check if the "winning" combination is consistent across OOS periods
+
+### "What Kelly fraction should I use?"
+
+1. Use `parameterRanges` with `kellyMultiplier: [0.25, 1.0, 0.25]`
+2. WFA tests each fraction across time windows
+3. If full Kelly dominates IS but half Kelly wins OOS, that's a signal to size conservatively
+
+### "How many trades do I need?"
+
+- 50+ trades: Reasonable for basic WFA
+- 100+ trades: Can use more windows for finer resolution
+- 200+ trades: Can use explicit day-based windows
+- <50 trades: Reduce window count to 3, interpret with extreme caution
 
 ## Common Issues
 
@@ -146,6 +220,10 @@ After walk-forward analysis:
 **Individual periods show high variance:**
 - May indicate regime changes during the historical period
 - The tool's `periods` array shows per-window breakdown
+
+**WFE looks inflated due to position sizing growth:**
+- Use `normalizeTo1Lot: true` to remove sizing bias
+- Especially important for pct_of_portfolio strategies where later trades are larger
 
 ## Notes
 
